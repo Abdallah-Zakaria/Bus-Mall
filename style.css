@@ -1,0 +1,17 @@
+ #productSection {
+     text-align: center;
+     float: right;
+     margin: 50px;
+ }
+ #productSection img {
+     margin: 20px;
+     border: red solid;
+ }
+ #header {
+     height: 100px;
+     background: red;
+ }
+ #result {
+     float: left;
+     margin: 20px;
+ }
