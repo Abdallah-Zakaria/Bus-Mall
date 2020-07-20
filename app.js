@@ -4,17 +4,19 @@
 var productSection = document.getElementById("productSection");
 var products = [];
 var totalClicks = 0;
-
+var numberOfClicks = [];
+var ProductName = [];
 
 var leftImageIndex;
 var middleImageIndex;
 var rightImageIndex;
+var previousImageIndex = [];
 
 
 var products25 = [
     ["bag", "image/bag.jpg"],
     ["banana", "image/banana.jpg"],
-    ["bathroom", "image/banana.jpg"],
+    ["bathroom", "image/bathroom.jpg"],
     ["boots", "image/boots.jpg"],
     ["breakfast", "image/breakfast.jpg"],
     ["bubblegum", "image/bubblegum.jpg"],
@@ -42,21 +44,16 @@ function Product(name, path) {
 
     this.numberOfClicks = 0;
     this.numberOfTimesShown = 0;
-    
+
 
     products.push(this);
 }
-Product.prototype.percentage = function(){
-    var total = this.numberOfClicks / this.numberOfTimesShown;
-    return total
-};
 
 
 for (var i = 0; i < products25.length; i++) {
     new Product(products25[i][0], products25[i][1]);
 }
 generateRandomImage()
-console.log(products)
 
 productSection.addEventListener('click', productClickHandler);
 
@@ -66,15 +63,25 @@ function generateRandomImage() {
     var leftImage = document.getElementById("leftImage");
     var middleImage = document.getElementById("middleImage");
     var rightImage = document.getElementById("rightImage");
+
     leftImageIndex = generateRandomNumber();
     middleImageIndex = generateRandomNumber();
     rightImageIndex = generateRandomNumber();
-    while (leftImageIndex === rightImageIndex || leftImageIndex === middleImageIndex || rightImageIndex === middleImageIndex) {
+
+    console.log(previousImageIndex)
+
+    while (leftImageIndex === rightImageIndex || leftImageIndex === middleImageIndex || rightImageIndex === middleImageIndex || previousImageIndex.includes(leftImageIndex) || previousImageIndex.includes(middleImageIndex) || previousImageIndex.includes(rightImageIndex) ) {
+        console.log(leftImageIndex,middleImageIndex,rightImageIndex)
+        console.log("have change")
         leftImageIndex = generateRandomNumber();
         middleImageIndex = generateRandomNumber();
         rightImageIndex = generateRandomNumber();
 
+        
+
     }
+    previousImageIndex = [];
+    previousImageIndex.push(leftImageIndex, middleImageIndex, rightImageIndex)
 
     var leftPath = products[leftImageIndex].path;
     var middlePath = products[middleImageIndex].path;
@@ -119,7 +126,9 @@ function productClickHandler() {
 
         }
     } else {
+        populateNumberOfClicksArr()
         generateUserMessage();
+        generateChart();
         productSection.removeEventListener('click', productClickHandler);
     }
 }
@@ -129,9 +138,61 @@ function generateUserMessage() {
     for (let index = 0; index < products.length; index++) {
         var listItem = document.createElement('li');
         // `name of the image` has been shown `number of times it was displayed` and clicked `number of times it has been clicked`
-        listItem.textContent = products[index].name + ' has been shown ' + products[index].numberOfTimesShown + ' and has been clicked ' + products[index].numberOfClicks;
+        listItem.textContent = products[index].name + ' had ' + products[index].numberOfClicks + ' votes and was shown ' +   products[index].numberOfTimesShown + " times";
         ulElement.appendChild(listItem);
     }
-
     
+
 }
+
+function populateNumberOfClicksArr() {
+    for (let index = 0; index < products.length; index++) {
+        numberOfClicks.push(products[index].numberOfClicks);
+        ProductName.push(products[index].name)
+    }
+}
+
+
+
+
+function generateChart() {
+    var ctx = document.getElementById('myChart').getContext('2d');
+    var myChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ProductName,
+            datasets: [{
+                label: '# of Clicks',
+                data: numberOfClicks,
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.2)',
+                    'rgba(54, 162, 235, 0.2)',
+                    'rgba(255, 99, 132, 0.2)',
+                    'rgba(75, 192, 192, 0.2)',
+                    'rgba(153, 102, 255, 0.2)',
+                    'rgba(255, 159, 64, 0.2)'
+                ],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)',
+                    'rgba(255, 159, 64, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        beginAtZero: true
+                    }
+                }]
+            }
+        }
+        
+    });
+}
+
