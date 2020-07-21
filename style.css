@@ -15,3 +15,6 @@
      float: left;
      margin: 20px;
  }
+header h1 {
+    display: inline;
+}
