@@ -3,8 +3,10 @@
 
 var productSection = document.getElementById("productSection");
 var products = [];
+var previousData= [];
+
 var totalClicks = 0;
-var numberOfClicks = [];
+var numberOfClicksList = [];
 var ProductName = [];
 
 var leftImageIndex;
@@ -12,7 +14,10 @@ var middleImageIndex;
 var rightImageIndex;
 var previousImageIndex = [];
 
+var numberOfClicks= [] ;
+var numberOfTimesShown = [];
 
+// this is a list include all the products to show (images and path)
 var products25 = [
     ["bag", "image/bag.jpg"],
     ["banana", "image/banana.jpg"],
@@ -37,7 +42,7 @@ var products25 = [
 
 ]
 
-
+// this is the main constructor to pass on it the 20 product to make them objects and push them in a list name it a products
 function Product(name, path) {
     this.name = name
     this.path = path;
@@ -49,16 +54,19 @@ function Product(name, path) {
     products.push(this);
 }
 
-
 for (var i = 0; i < products25.length; i++) {
     new Product(products25[i][0], products25[i][1]);
+    
 }
+
 generateRandomImage()
 
 productSection.addEventListener('click', productClickHandler);
 
 
-
+// this function for generated a 3 image every time you click on one of them .
+// this function have a if statament that make sure to not take iamge that already show in the previous iteration.
+// set every iteration a new attribute  inside the src to have a new one.
 function generateRandomImage() {
     var leftImage = document.getElementById("leftImage");
     var middleImage = document.getElementById("middleImage");
@@ -68,16 +76,14 @@ function generateRandomImage() {
     middleImageIndex = generateRandomNumber();
     rightImageIndex = generateRandomNumber();
 
-    console.log(previousImageIndex)
 
-    while (leftImageIndex === rightImageIndex || leftImageIndex === middleImageIndex || rightImageIndex === middleImageIndex || previousImageIndex.includes(leftImageIndex) || previousImageIndex.includes(middleImageIndex) || previousImageIndex.includes(rightImageIndex) ) {
-        console.log(leftImageIndex,middleImageIndex,rightImageIndex)
-        console.log("have change")
+
+    while (leftImageIndex === rightImageIndex || leftImageIndex === middleImageIndex || rightImageIndex === middleImageIndex || previousImageIndex.includes(leftImageIndex) || previousImageIndex.includes(middleImageIndex) || previousImageIndex.includes(rightImageIndex)) {
         leftImageIndex = generateRandomNumber();
         middleImageIndex = generateRandomNumber();
         rightImageIndex = generateRandomNumber();
 
-        
+
 
     }
     previousImageIndex = [];
@@ -97,11 +103,16 @@ function generateRandomImage() {
 
 }
 
-
+// this function to get random number between 1 and 25 and make it floor using math.
 function generateRandomNumber() {
     return Math.floor(Math.random() * products.length);
 }
 
+// this function work when any of the image get clicked will add to number of click for the clicked image plus one 
+// and every iteration the three showen image will get plus one on his number of show
+// this function will stay only 25 times and make the calculations each time 
+// when the 25 times finish will call the chart and message to the user of the cumulative statistics of number of click and showen
+// then will store the data in the local storage to use it again.
 function productClickHandler() {
 
     if (totalClicks < 25) {
@@ -129,6 +140,7 @@ function productClickHandler() {
         populateNumberOfClicksArr()
         generateUserMessage();
         generateChart();
+        storeDate();
         productSection.removeEventListener('click', productClickHandler);
     }
 }
@@ -138,48 +150,55 @@ function generateUserMessage() {
     for (let index = 0; index < products.length; index++) {
         var listItem = document.createElement('li');
         // `name of the image` has been shown `number of times it was displayed` and clicked `number of times it has been clicked`
-        listItem.textContent = products[index].name + ' had ' + products[index].numberOfClicks + ' votes and was shown ' +   products[index].numberOfTimesShown + " times";
+        listItem.textContent = products[index].name + ' had ' + products[index].numberOfClicks + ' votes and was shown ' + products[index].numberOfTimesShown + " times";
         ulElement.appendChild(listItem);
     }
-    
+
 
 }
 
 function populateNumberOfClicksArr() {
     for (let index = 0; index < products.length; index++) {
-        numberOfClicks.push(products[index].numberOfClicks);
+        numberOfClicksList.push(products[index].numberOfClicks);
         ProductName.push(products[index].name)
     }
 }
 
+function storeDate() {
+    var dataStringify = JSON.stringify(products);
+    localStorage.setItem("products", dataStringify);
+}
 
+function updateData(previousData) {
+    for (let index = 0; index < products.length; index++) {
+        products[index].numberOfClicks = previousData[index].numberOfClicks;
+        products[index].numberOfTimesShown = previousData[index].numberOfTimesShown;
+    }
+}
+function addPreviousData() {
+    var previousData = JSON.parse(localStorage.getItem("products"))
+    updateData(previousData);
 
+}
+var emptyList = [];
+if(localStorage.getItem("products") !== null ){
+    addPreviousData();
+}
 
+// this function is a library name chart.js
+// only we pass in it the type oof chart , labels and data will shown in array 
+// you can change the color of the bars 
 function generateChart() {
     var ctx = document.getElementById('myChart').getContext('2d');
-    var myChart = new Chart(ctx, {
+    var ctx = new Chart(ctx, {
         type: 'bar',
         data: {
             labels: ProductName,
             datasets: [{
                 label: '# of Clicks',
-                data: numberOfClicks,
-                backgroundColor: [
-                    'rgba(255, 99, 132, 0.2)',
-                    'rgba(54, 162, 235, 0.2)',
-                    'rgba(255, 99, 132, 0.2)',
-                    'rgba(75, 192, 192, 0.2)',
-                    'rgba(153, 102, 255, 0.2)',
-                    'rgba(255, 159, 64, 0.2)'
-                ],
-                borderColor: [
-                    'rgba(255, 99, 132, 1)',
-                    'rgba(54, 162, 235, 1)',
-                    'rgba(255, 99, 132, 1)',
-                    'rgba(75, 192, 192, 1)',
-                    'rgba(153, 102, 255, 1)',
-                    'rgba(255, 159, 64, 1)'
-                ],
+                data: numberOfClicksList,
+                backgroundColor:'rgba(255, 99, 132, 0.2)' ,
+                borderColor:'black' ,
                 borderWidth: 1
             }]
         },
@@ -192,7 +211,7 @@ function generateChart() {
                 }]
             }
         }
-        
+
     });
 }
 
